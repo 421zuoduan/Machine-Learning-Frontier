@@ -18,7 +18,7 @@
 ├── PPMI.mat
 ```
 
-对数据集的读取与处理在`dataset.py`文件与`Database`文件夹中可以查看详细过程。
+对数据集的读取与处理在`dataloader.py`文件与`Database`文件夹中可以查看详细过程。
 
 
 

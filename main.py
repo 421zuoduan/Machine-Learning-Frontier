@@ -2,25 +2,14 @@ import torch.nn
 import numpy as np
 import random
 
-from Database.database import database
-from Database.dataset import dataset
-from Database.utils import split_train_valid_test
-from utils import set_seed, encode, getLLM, logConfig
+from utils import set_seed, getLLM, logConfig
 from config import *
 from trainer import trainer
 from model_generation import model_generate
 from dataloader import load_dataset
 
-from transformers import PreTrainedTokenizer
-from torch.utils.data.dataloader import DataLoader
 
-
-
-
-def train(db, args):
-
-    # 设置种子
-    set_seed(args.seed)
+def main(db, args):
 
     # 设置设备
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -36,6 +25,10 @@ def train(db, args):
     # 定义随机状态
     for random_state in args.random_state:
 
+        # 设置种子
+        set_seed(random_state)
+
+        # 定义日志文件
         logger = logConfig(args.log_path, args.taskformat, args.add_terminal, args.name, random_state)
 
         # 获取数据集和prompt数量
@@ -120,7 +113,10 @@ def train(db, args):
 
 
 if __name__ == '__main__':
+    '''
+    choice of datasets: ADNI, ADNI_fMRI, PPMI, OCD_fMRI, FTD_fMRI
+    '''
 
     args = args()
-    train(ADNI, args)
+    main(ADNI, args)
     # train(ADNI_fMRI, ADNI_fMRI_config)

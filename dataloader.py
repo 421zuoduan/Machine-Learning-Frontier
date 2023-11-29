@@ -5,36 +5,6 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data.dataset import  Dataset
 from utils import encode
 
-def encode(args, data: torch.Tensor, tokenizer):
-    shape = data.shape
-    if (len(shape) == 2):
-        encode_tensor_list = []
-        for i in range(shape[0]):
-            encode_item_list = []
-            for j in range(shape[1]):
-                encode_str = args.level_token_format.format(data[i, j])
-                encode_item = tokenizer.convert_tokens_to_ids(encode_str)
-                encode_item_list.append(encode_item)
-            # encode_tensor = torch.tensor(encode_item_list, dtype=torch.long)
-            encode_tensor_list.append(encode_item_list)
-        return torch.tensor(encode_tensor_list, dtype=torch.long)
-    elif (len(shape) == 3):
-        encode_tensor_tensor_list = []
-        for i in range(shape[0]):
-            encode_tensor_list = []
-            for j in range(shape[1]):
-                encode_item_list = []
-                for k in range(shape[2]):
-                    encode_str = LEVEL_TOKEN_FORMAT.format(data[i, j, k])
-                    encode_item = tokenizer.convert_tokens_to_ids(encode_str)
-                    encode_item_list.append(encode_item)
-                # encode_tensor = torch.tensor(encode_item_list, dtype=torch.long)
-                encode_tensor_list.append(encode_item_list)
-            encode_tensor_tensor_list.append(encode_tensor_list)
-        return torch.tensor(encode_tensor_tensor_list, dtype=torch.long)
-    else:
-        raise NotImplementedError("len(shape)!=2 or len(shape)!=3 Not Implement!")
-
 class dataset(Dataset):
     def __init__(self, data, labels):
         self.data = data
@@ -47,8 +17,7 @@ class dataset(Dataset):
         sample = {'data': self.data[idx], 'label': self.labels[idx]}
         return sample
 
-def split_dataset(data: np.ndarray, label: np.ndarray, randomstate: int) -> (
-        np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+def split_dataset(data: np.ndarray, label: np.ndarray, randomstate: int):
     train_data, temp_data, train_label, temp_label = train_test_split(data, label, test_size=0.4,
                                                                       random_state=randomstate, stratify=label)
 

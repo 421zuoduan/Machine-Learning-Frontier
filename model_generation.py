@@ -1,6 +1,5 @@
 import torch
 from torch import nn
-from transformers import PreTrainedTokenizer
 from utils import prompt_reflect, mask_slice_reflect, concat_prompt_data
 from prompt import prompt
 from finetune import mlp, gru

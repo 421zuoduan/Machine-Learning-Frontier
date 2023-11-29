@@ -1,7 +1,7 @@
 import os
 import argparse
 import datetime
-from Database.database import database
+from database.database import database
 
 ADNI = database('ADNI', 'ADNI')
 PPMI = database('PPMI', 'PPMI')
