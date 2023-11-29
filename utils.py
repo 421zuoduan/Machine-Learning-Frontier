@@ -29,7 +29,7 @@ from transformers import (
 from Database.utils import split_train_valid_test
 import os,sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from configs.config import LEVEL_TOKEN_FORMAT
+from configs.config import *
 
 
 # TODO: random_state 不太应该放在这里当成参数
@@ -42,17 +42,18 @@ def data_to_dict(data: np.ndarray, label: np.ndarray, randomstate: int) -> dict:
     返回：
         dict：形如下面形式的字典:
         {
-            'train': [dict1, dict2, ...]
-            'validation': [dict1, dict2, ...]
-            'test': [dict1, dict2, ...]
-        }
-        其中 dict1, dict2, ... 表示每个样本, 是形如下面形式的字典:
-        {
-            'id': 样本的标号
-            'feature_1': 第一个特征对应的值, 如果是时序数据, 则是一个字符串, 每两个时间的数据用一个空格隔开
-            ...
-            'feature_n': 第 n 个特征对应的值
-            'label': 标签的值
+            'train': Dataset({
+                features: ['id', 'feature_1', ..., 'feature_n', 'label'],
+                numrows: a value
+            })
+            'validation': Dataset({
+                features: ['id', 'feature_1', ..., 'feature_n', 'label'],
+                numrows: a value
+            })
+            'test': Dataset({
+                features: ['id', 'feature_1', ..., 'feature_n', 'label'],
+                numrows: a value
+            })
         }
         再使用 hugging face 中的库对 dict 进行一次类型转换.
     """
@@ -91,6 +92,18 @@ def data_to_dict(data: np.ndarray, label: np.ndarray, randomstate: int) -> dict:
                 "len(shape)!=2 or len(shape)!=3 Not Implement!")
     return datasets.DatasetDict(data_dict)
 
+def get_tokenizer(model_name_or_path: str):
+    if any(k in model_name_or_path for k in ("gpt", "opt", "bloom")): # 根据模型的名字判断填充的方向， 这里的padding是指在序列数据的两端添加特定的元素，使序列达到指定的长度
+        padding_side = "left"
+    else:
+        padding_side = "right"
+    tokenizer = AutoTokenizer.from_pretrained(
+    model_name_or_path, padding_side=padding_side)
+    if getattr(tokenizer, "pad_token_id") is None: # 检查 tokenizer 是否有 pad_token_id 属性
+        tokenizer.pad_token_id = tokenizer.eos_token_id # 若没有则赋值为 eos_token_id 属性的值
+    
+    return tokenizer
+
 def tokenize_function(sample: dict,tokenizer: AutoTokenizer):
     # max_length=None => use the model max length (it's actually the default)
     # 获取字典的键, 存到一个list中
@@ -98,5 +111,6 @@ def tokenize_function(sample: dict,tokenizer: AutoTokenizer):
     array=[]
     for key in keys:
         array.append(sample[key])
+    tokenizer=get_tokenizer(model_name_or_path)
     outputs = tokenizer(*array, truncation=True, max_length=None)
     return outputs
