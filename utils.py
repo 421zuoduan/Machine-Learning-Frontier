@@ -64,32 +64,39 @@ def data_to_dict(data: np.ndarray, label: np.ndarray, randomstate: int) -> dict:
     data_dict = {}
     for idx, (data, label) in enumerate(zip(Samples, Labels)):
         shape = data.shape
+        dataset_dict={}
+        dataset_dict['id'] = [i for i in range(shape[0])] # 样本的个数
+        dataset_dict['label'] = label
         if (len(shape) == 2):
-            sample_dict_list = []
-            for i in range(shape[0]):
-                sample_dict = {}
-                sample_dict['id'] = str(i)
-                sample_dict['label'] = str(label[i])
-                for j in range(shape[1]):
+            for j in range(shape[1]):
+                feature_list=[]
+                for i in range(shape[0]):
                     encode_str = LEVEL_TOKEN_FORMAT.format(data[i, j])
-                    sample_dict['feature_'+str(j)] = encode_str
-                sample_dict_list.append(sample_dict)
-            data_dict[sample_catorgory[idx]] = sample_dict_list
+                    feature_list.append(encode_str)
+                dataset_dict['feature_'+str(j)]=feature_list
+            data_dict[sample_catorgory[idx]] = datasets.Dataset.from_dict(dataset_dict)
         elif (len(shape) == 3):
-            sample_dict_list = []
-            for i in range(shape[0]):
-                sample_dict = {}
-                sample_dict['id'] = str(i)
-                sample_dict['label'] = str(label[i])
-                for j in range(shape[1]):
+            for j in range(shape[1]):
+                feature_list=[]
+                for i in range(shape[0]):
                     seq_str=''
-                    for k in range(shape[2]):
+                    for k in range(shape[2]): # 样本 i 的时序数据形成的字符串
                         encode_str = LEVEL_TOKEN_FORMAT.format(data[i, j, k])
-                        time_series_str+=(encode_str+' ')
-                    sample_dict['feature_'+str(j)] = seq_str
-                sample_dict_list.append(sample_dict)
-            data_dict[sample_catorgory[idx]] = sample_dict_list
+                        seq_str+=(encode_str+' ')
+                    feature_list.append(seq_str)
+                dataset_dict['feature_'+str(j)]=feature_list
+            data_dict[sample_catorgory[idx]] = datasets.Dataset.from_dict(dataset_dict)
         else:
             raise NotImplementedError(
                 "len(shape)!=2 or len(shape)!=3 Not Implement!")
-    return datasets.Dataset.from_dict(data_dict)
+    return datasets.DatasetDict(data_dict)
+
+def tokenize_function(sample: dict,tokenizer: AutoTokenizer):
+    # max_length=None => use the model max length (it's actually the default)
+    # 获取字典的键, 存到一个list中
+    keys = list(sample.keys())
+    array=[]
+    for key in keys:
+        array.append(sample[key])
+    outputs = tokenizer(*array, truncation=True, max_length=None)
+    return outputs
