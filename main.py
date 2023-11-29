@@ -7,7 +7,7 @@ from Database.dataset import dataset
 from Database.utils import split_train_valid_test
 from utils import set_seed, encode, getLLM, logConfig, concate_prompt_data, mask_slice_reflect, prompt_reflect
 from config import args
-from trainer import train_iter
+from trainer import trainer
 
 from finetune import gru, mlp
 import prompt
@@ -31,6 +31,7 @@ def train(db: database, args):
 
     # 获取LLM模型
     LLM_model, tokenizer = getLLM(args.LLM_PATH)
+    LLM_model.to(device)
     LLM_model.eval()
     
     # 数据离散化
@@ -44,27 +45,21 @@ def train(db: database, args):
         # 获取数据集和prompt数量
         traindata, validdata, train_loader, valid_loader= load_dataset(args, data, label, random)
         
-        # 生成prompt_model和mask_model
+        # 用以生成prompt_model和mask_model
         traindata_dimention = len(traindata.shape)
         traindata_len = traindata.shape[-2] if traindata_dimention == 3 else 1
-        prompt_model, mask_model = prompt_generate(args, traindata_dimention, traindata_len, mask_hidden_size, labelmap, device)
-        
-        # 将模型放到GPU上
-        LLM_model.to(device)
-        prompt_model.to(device)
-        mask_model.to(device)
 
         # 生成最终的模型
-        model = model(args, LLM_model, prompt_model, mask_model)
+        model = model(args, LLM_model, traindata_dimention, traindata_len, labelmap, device)
 
         # 训练设置（优化器，损失函数）
         criterion = torch.nn.CrossEntropyLoss()
         optimizer = torch.optim.NAdam(
-            mask_model.parameters(),
+            model.parameters(),
             lr=args.lr, weight_decay=args.weight_decay)
 
         # 得到插入Mask的prompt
-        beforePrompt, afterPrompt, mask = prompt_model.returnPrompt(tokenizer)
+        beforePrompt, afterPrompt, mask = model.prompt_model.returnPrompt(tokenizer)
 
         # 写入日志文件
         logger.info("Init Prompt!")
@@ -85,23 +80,14 @@ def train(db: database, args):
             valid_epoch_loss = 0.0
             valid_correct_predictions = 0
             valid_total_samples = 0
-            correct_predictions, epoch_loss, total_samples = train_iter(correct_predictions, criterion,
-                                                                          device, epoch_loss, mask_model, model,
-                                                                          prompt_model, tokenizer, total_samples,
-                                                                          train_loader, optimizer, train=True)
-            prompt_model.eval()
-            mask_model.eval()
+            correct_predictions, epoch_loss, total_samples = trainer(train_loader, model, tokenizer, 
+                                                                     correct_predictions, epoch_loss, total_samples, optimizer, criterion, device, train=True)
+            
             model.eval()
-            valid_correct_predictions, valid_epoch_loss, valid_total_samples = batchProcess(valid_correct_predictions,
-                                                                                            criterion,
-                                                                                            device, valid_epoch_loss,
-                                                                                            mask_model, model,
-                                                                                            prompt_model, tokenizer,
-                                                                                            valid_total_samples,
-                                                                                            valid_loader, optimizer,
-                                                                                            train=False)
-            prompt_model.train()
-            mask_model.train()
+            valid_correct_predictions, valid_epoch_loss, valid_total_samples = trainer(valid_loader, model, tokenizer, 
+                                                                                       valid_correct_predictions, valid_epoch_loss, valid_total_samples, optimizer, criterion, device, train=True)
+            
+            model.train()
 
             # 计算epoch平均损失和准确率
             epoch_loss /= len(train_loader)
@@ -112,17 +98,17 @@ def train(db: database, args):
             if valid_epoch_loss < best_valid_loss:
                 best_valid_loss = valid_epoch_loss
                 # 保存模型
-                torch.save(prompt_model,
+                torch.save(model.prompt_model,
                            f'checkpoint/promptModel/{args.name}_{random_state}_{prompt_iter}_romptModel.pt')
-                torch.save(mask_model, f'checkpoint/maskModel/{args.name}_{random_state}_{prompt_iter}_maskModel.pt')
-                logger.info(f'Epoch [{epoch}/{args.num_epochs}],Valid Loss: {valid_epoch_loss:.4f}!')
+                torch.save(model.mask_model, f'checkpoint/maskModel/{args.name}_{random_state}_{prompt_iter}_maskModel.pt')
+                logger.info(f'Epoch [{epoch}/{args.num_epochs}], Valid Loss: {valid_epoch_loss:.4f}!')
             else:
                 not_change += 1
                 if (not_change == args.patience):
                     not_change = 0
-                    prompt_model.reParameterize()
+                    model.prompt_model.reParameterize()
 
-                    beforePrompt, afterPrompt, mask = prompt_model.returnPrompt(tokenizer)
+                    beforePrompt, afterPrompt, mask = model.prompt_model.returnPrompt(tokenizer)
                     logger.info(f"Prompt Iter {prompt_iter}Early Stop!Change Prompt To Find A Better One!")
                     logger.info(f'beforePrompt:{beforePrompt}')
                     logger.info(f'afterPrompt:{afterPrompt}')

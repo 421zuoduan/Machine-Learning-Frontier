@@ -101,13 +101,15 @@ def logConfig(path_format: str, task_format, add_terminal: False, *data):
 ############################################################################
 ############################# prompt operation #############################
 
-def prompt_reflect(prompt, device):
+def prompt_reflect(prompt, tokenizer, device):
     max_vals, _ = torch.max(prompt, dim=1, keepdim=True)
     min_vals, _ = torch.min(prompt, dim=1, keepdim=True)
     prompt_slice = max_vals - min_vals
     prompt_slice[prompt_slice == 0] = 1e-18
     prompt = (prompt - min_vals) / prompt_slice
-    return prompt
+    prompt = prompt * tokenizer.vocab_size
+    prompt = prompt.clamp(0, tokenizer.vocab_size - 1).to(device)
+    return prompt.long()
 
 
 def mask_slice_reflect(mask_slice, prompt_length, device):
@@ -118,7 +120,7 @@ def mask_slice_reflect(mask_slice, prompt_length, device):
     return mask.long(), slice.long()
 
 
-def concate_prompt_data(prompt, data, mask, slice, tokenizer: PreTrainedTokenizer, device):
+def concat_prompt_data(prompt, data, mask, slice, tokenizer: PreTrainedTokenizer, device):
     batch_size = data.shape[0]
     data_length = data.shape[-1]
     masktokenid = tokenizer.mask_token_id
