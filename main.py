@@ -5,15 +5,11 @@ import random
 from Database.database import database
 from Database.dataset import dataset
 from Database.utils import split_train_valid_test
-from utils import set_seed, encode, getLLM, logConfig, concate_prompt_data, mask_slice_reflect, prompt_reflect
+from utils import set_seed, encode, getLLM, logConfig
 from config import args
 from trainer import trainer
-
-from finetune import gru, mlp
-import prompt
 from model_generation import *
 from dataloader import load_dataset
-
 
 from transformers import PreTrainedTokenizer
 from torch.utils.data.dataloader import DataLoader
@@ -109,13 +105,13 @@ def train(db: database, args):
                     model.prompt_model.reParameterize()
 
                     beforePrompt, afterPrompt, mask = model.prompt_model.returnPrompt(tokenizer)
-                    logger.info(f"Prompt Iter {prompt_iter}Early Stop!Change Prompt To Find A Better One!")
+                    logger.info(f"Prompt Iter {prompt_iter}Early Stop! Change Prompt To Find A Better One!")
                     logger.info(f'beforePrompt:{beforePrompt}')
                     logger.info(f'afterPrompt:{afterPrompt}')
                     logger.info(f'mask:{mask}')
                     best_valid_loss = float('inf')
                     prompt_iter += 1
-            logger.info(f'Loss Not Changed Num:{not_change},Prompt Iter:{prompt_iter}')
+            logger.info(f'Loss Not Changed Num:{not_change}, Prompt Iter:{prompt_iter}')
             logger.info(
                 f'Epoch [{epoch}/{args.num_epochs}], Train Loss: {epoch_loss:.4f}, Train Accuracy: {accuracy * 100:.2f}%, Valid Loss: {valid_epoch_loss:.4f}, Valid Accuracy: {valid_accuracy * 100:.2f}%')
 

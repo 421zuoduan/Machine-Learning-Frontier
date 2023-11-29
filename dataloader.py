@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data.dataset import  Dataset
 from utils import encode
 
-def encode(data: torch.Tensor, tokenizer: PreTrainedTokenizer):
+def encode(data: torch.Tensor, tokenizer):
     shape = data.shape
     if (len(shape) == 2):
         encode_tensor_list = []
@@ -58,7 +58,7 @@ def split_dataset(data: np.ndarray, label: np.ndarray, randomstate: int) -> (
     return train_data, train_label, valid_data, valid_label, test_data, test_label
 
 
-def load_data(args, data, label, device, tokenizer, random_state, mask_hidden_size, labelmap):
+def load_dataset(args, data, label, device, tokenizer, random_state, mask_hidden_size, labelmap):
 
     traindata, trainlabel, validdata, validlabel, testdata, testlabel = split_dataset(data, label, randomstate=random_state)
     prompt_num = 1 if len(traindata.shape) == 2 else traindata.shape[-2]

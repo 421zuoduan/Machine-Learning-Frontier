@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from utils import prompt_reflect, mask_slice_reflect, concate_prompt_data
 
 def trainer(train_loader, model, tokenizer, correct_predictions, epoch_loss, 
                  total_samples, optimizer, criterion, device, train: bool = True):

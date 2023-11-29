@@ -11,7 +11,7 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Unsupported value encountered.')
 
-def args:
+def args():
 
     start_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     
@@ -42,31 +42,29 @@ def args:
     parser.add_argument('--LLM_path', type = str, default = './LLM', help = 'LLM path that is a folder')
     # Logs and checkpoint parameters
     parser.add_argument('--log_path', type = str, default = './logs', help = 'LOG path that is a folder')
-    parser.add_Argument('--checkpoint_path', type = str, default = './checkpoints', help = 'CHECKPOINT path that is a folder')
+    parser.add_argument('--checkpoint_path', type = str, default = './checkpoints', help = 'CHECKPOINT path that is a folder')
     # Validation parameters
     parser.add_argument('--val_freq', type = int, default = 5, help = 'frequency of validation, 0 for no validation while training')
-    parser.add_argument('--val_figures', type = str, default = './results, help = 'validation figures path that is a folder')
+    parser.add_argument('--val_figures', type = str, default = './results', help = 'validation figures path that is a folder')
     parser.add_argument('--val_batch_size', type = int, default = 1, help = 'size of the batches')
     # Prompt parameters
-    parser.add_argument('gru_hidden_state', type = int, default = 64, help = 'gru_hidden_state')
-    parser.add_argument('gru_layer', type = int, default = 1, help = 'gru_layer')
-    parser.add_argument('prompt_seq_length', type = int, default = 64, help = 'prompt_seq_length')
-    parser.add_argument('mask_str', type = str, default = '[MASK]', help = 'mask_str')
-    parser.add_argument('slice_num', type = int, default = 100, help = 'slice_num')
-    parser.add_argument('random_state', type = int, default = (0, 1, 2, 3, 4), help = 'random_state')
-    parser.add_argument('mask_hidden_features', type = int, default = (512, 256), help = 'mask_hidden_features')
-    parser.add_argument('cut_hidden_features', type = int, default = (64, 128, 256), help = 'cut_hidden_features')
+    parser.add_argument('--gru_hidden_state', type = int, default = 64, help = 'gru_hidden_state')
+    parser.add_argument('--gru_layer', type = int, default = 1, help = 'gru_layer')
+    parser.add_argument('--prompt_seq_length', type = int, default = 64, help = 'prompt_seq_length')
+    parser.add_argument('--mask_str', type = str, default = '[MASK]', help = 'mask_str')
+    parser.add_argument('--slice_num', type = int, default = 100, help = 'slice_num')
+    parser.add_argument('--random_state', type = int, default = (0, 1, 2, 3, 4), help = 'random_state')
+    parser.add_argument('--mask_hidden_features', type = int, default = (512, 256), help = 'mask_hidden_features')
+    parser.add_argument('--cut_hidden_features', type = int, default = (64, 128, 256), help = 'cut_hidden_features')
     # other parameters
     parser.add_argument('--add_terminal', type = str2bool, default = True, help = 'add_terminal')
     parser.add_argument('--patience', type = int, default = 10, help = 'patience')
     parser.add_argument('--seed', type = int, default = 24, help = 'seed')
     parser.add_argument('--dropout', type = float, default = 0.05, help = 'dropout')
-    parser.add_argument('--device', type = torch.device, default = torch.device('cuda'), help = 'device')
     parser.add_argument('--batch_size', type = int, default = 4, help = 'batch_size')
     parser.add_argument('--level_token_format', type = str, default = '{:0>2}', help = 'level_token_format')
     parser.add_argument('--label_token_format', type = str, default = '{}', help = 'label_token_format')
     parser.add_argument('--taskformat', type = str, default = '{}_{}', help = 'taskformat')
-    parser.add_argument('--slice_num', type = int, default = 100, help = 'slice_num')
 
     opt = parser.parse_args()
     print(opt)
