@@ -1,6 +1,13 @@
 import os
 import argparse
 import datetime
+from Database.database import database
+
+ADNI = database('ADNI', 'ADNI')
+PPMI = database('PPMI', 'PPMI')
+ADNI_fMRI = database('ADNI_fMRI', 'ADNI_90_120_fMRI')
+OCD_fMRI = database('OCD_fMRI', 'OCD_90_200_fMRI')
+FTD_fMRI = database('FTD_fMRI', 'FTD_90_200_fMRI')
 
 def str2bool(v):
     #print(v)
@@ -26,9 +33,9 @@ def args():
     parser.add_argument('--gpu_ids', type = str, default = '0', help = 'gpu_ids: e.g. 0  0,1  0,1,2  use -1 for CPU')
     parser.add_argument('--cudnn_benchmark', type = str2bool, default = True, help = 'True for unchanged input data type')
     # Training parameters
-    parser.add_argument('--epochs', type = int, default = 1000, help = 'number of epochs of training')
+    parser.add_argument('--num_epochs', type = int, default = 50, help = 'number of epochs of training')
     parser.add_argument('--train_batch_size', type = int, default = 15, help = 'size of the batches')
-    parser.add_argument('--lr_g', type = float, default = 0.0002, help = 'Adam: learning rate for G / D')
+    parser.add_argument('--lr', type = float, default = 0.0002, help = 'Adam: learning rate for G / D')
     parser.add_argument('--b1', type = float, default = 0.9, help = 'Adam: decay of first order momentum of gradient')
     parser.add_argument('--b2', type = float, default = 0.999, help = 'Adam: decay of second order momentum of gradient')
     parser.add_argument('--weight_decay', type = float, default = 0, help = 'weight decay for optimizer')
@@ -39,7 +46,7 @@ def args():
     parser.add_argument('--init_gain', type = float, default = 0.02, help = 'initialization gain of generator')
     # Dataset parameters
     parser.add_argument('--baseroot', type = str, default = './datasets', help = 'datasets baseroot')
-    parser.add_argument('--LLM_path', type = str, default = './LLM', help = 'LLM path that is a folder')
+    parser.add_argument('--LLM_path', type = str, default = r'G:\Code\LLM\hflchinese-macbert-large\chinese-macbert-large', help = 'LLM path that is a folder')
     # Logs and checkpoint parameters
     parser.add_argument('--log_path', type = str, default = './logs', help = 'LOG path that is a folder')
     parser.add_argument('--checkpoint_path', type = str, default = './checkpoints', help = 'CHECKPOINT path that is a folder')
@@ -65,6 +72,7 @@ def args():
     parser.add_argument('--level_token_format', type = str, default = '{:0>2}', help = 'level_token_format')
     parser.add_argument('--label_token_format', type = str, default = '{}', help = 'label_token_format')
     parser.add_argument('--taskformat', type = str, default = '{}_{}', help = 'taskformat')
+    parser.add_argument('--name', type = str, default='str')
 
     opt = parser.parse_args()
     print(opt)

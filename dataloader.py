@@ -5,14 +5,14 @@ from sklearn.model_selection import train_test_split
 from torch.utils.data.dataset import  Dataset
 from utils import encode
 
-def encode(data: torch.Tensor, tokenizer):
+def encode(args, data: torch.Tensor, tokenizer):
     shape = data.shape
     if (len(shape) == 2):
         encode_tensor_list = []
         for i in range(shape[0]):
             encode_item_list = []
             for j in range(shape[1]):
-                encode_str = LEVEL_TOKEN_FORMAT.format(data[i, j])
+                encode_str = args.level_token_format.format(data[i, j])
                 encode_item = tokenizer.convert_tokens_to_ids(encode_str)
                 encode_item_list.append(encode_item)
             # encode_tensor = torch.tensor(encode_item_list, dtype=torch.long)
@@ -58,7 +58,7 @@ def split_dataset(data: np.ndarray, label: np.ndarray, randomstate: int) -> (
     return train_data, train_label, valid_data, valid_label, test_data, test_label
 
 
-def load_dataset(args, data, label, device, tokenizer, random_state, mask_hidden_size, labelmap):
+def load_dataset(args, data, label, tokenizer, random_state):
 
     traindata, trainlabel, validdata, validlabel, testdata, testlabel = split_dataset(data, label, randomstate=random_state)
     prompt_num = 1 if len(traindata.shape) == 2 else traindata.shape[-2]
@@ -66,8 +66,8 @@ def load_dataset(args, data, label, device, tokenizer, random_state, mask_hidden
     train_dataset = dataset(traindata, trainlabel)
     valid_dataset = dataset(validdata, validlabel)
 
-    train_dataset.data = encode(train_dataset.data, tokenizer)
-    valid_dataset.data = encode(valid_dataset.data, tokenizer)
+    train_dataset.data = encode(args, train_dataset.data, tokenizer)
+    valid_dataset.data = encode(args, valid_dataset.data, tokenizer)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, num_workers=1, shuffle=True)
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, num_workers=1)

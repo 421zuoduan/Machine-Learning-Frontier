@@ -6,9 +6,9 @@ from Database.database import database
 from Database.dataset import dataset
 from Database.utils import split_train_valid_test
 from utils import set_seed, encode, getLLM, logConfig
-from config import args
+from config import *
 from trainer import trainer
-from model_generation import *
+from model_generation import model_generate
 from dataloader import load_dataset
 
 from transformers import PreTrainedTokenizer
@@ -17,7 +17,7 @@ from torch.utils.data.dataloader import DataLoader
 
 
 
-def train(db: database, args):
+def train(db, args):
 
     # 设置种子
     set_seed(args.seed)
@@ -26,7 +26,7 @@ def train(db: database, args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # 获取LLM模型
-    LLM_model, tokenizer = getLLM(args.LLM_PATH)
+    LLM_model, tokenizer = getLLM(args.LLM_path)
     LLM_model.to(device)
     LLM_model.eval()
     
@@ -39,14 +39,14 @@ def train(db: database, args):
         logger = logConfig(args.log_path, args.taskformat, args.add_terminal, args.name, random_state)
 
         # 获取数据集和prompt数量
-        traindata, validdata, train_loader, valid_loader= load_dataset(args, data, label, random)
-        
+        traindata, validdata, train_loader, valid_loader= load_dataset(args, data, label, tokenizer, random_state)
+
         # 用以生成prompt_model和mask_model
         traindata_dimention = len(traindata.shape)
         traindata_len = traindata.shape[-2] if traindata_dimention == 3 else 1
 
         # 生成最终的模型
-        model = model(args, LLM_model, traindata_dimention, traindata_len, labelmap, device)
+        model = model_generate(args, LLM_model, traindata_dimention, traindata_len, labelmap, device)
 
         # 训练设置（优化器，损失函数）
         criterion = torch.nn.CrossEntropyLoss()
@@ -122,5 +122,5 @@ def train(db: database, args):
 if __name__ == '__main__':
 
     args = args()
-    train(ADNI, ADNI_config, args)
+    train(ADNI, args)
     # train(ADNI_fMRI, ADNI_fMRI_config)

@@ -9,28 +9,31 @@ from finetune import mlp, gru
 class prompt_generate(nn.Module):
     def __init__(self, args, traindata_dimention, traindata_len, prompt_seq_length, labelmap, mask_hidden_size, device=torch.device('cuda')):
         super().__init__()
+        self.args = args
         self.prompt_num = traindata_len if traindata_dimention == 3 else 1
         self.prompt_length = prompt_seq_length
         self.labelmap = labelmap
         self.prompt = prompt()
+
+        self.prompt_model = self.prompt
+        if (traindata_dimention == 2):
+            self.mask_model = mlp(mask_hidden_size, self.args.mask_hidden_features, len(self.labelmap), self.args.dropout)
+        elif (traindata_dimention == 3):
+            self.mask_model = nn.Sequential(
+                gru(self.mask_hidden_size, self.args.gru_hidden_state, self.args.gru_gru_layer),
+                mlp(self.args.gru_gru_hidden_state * self.prompt_num, self.args.mask_hidden_features, len(self.labelmap),
+                    self.args.dropout))
+        else:
+            raise NotImplementedError("traindata_dimention!=2 or traindata_dimention!=3 !")
         self.device = device
         self.to(self.device)
 
     def forward(self):
 
-        prompt_model = self.prompt
-        if (self.prompt_num == 2):
-            mask_model = mlp(self.mask_hidden_size, self.args.mask_hidden_features, len(self.labelmap), self.args.dropout)
-        elif (self.prompt_num == 3):
-            mask_model = nn.Sequential(
-                gru(self.mask_hidden_size, self.args.gru_hidden_state, self.args.gru_gru_layer),
-                mlp(self.args.gru_gru_hidden_state * self.prompt_num, self.args.mask_hidden_features, len(self.labelmap),
-                    self.args.dropout))
-        
-        return prompt_model, mask_model
+        return self.prompt_model, self.mask_model
 
 
-class model(nn.Module):
+class model_generate(nn.Module):
     def __init__(self, args, LLM_model, traindata_dimention, traindata_len, labelmap, device=torch.device('cuda')):
         super().__init__()
         self.args = args
@@ -39,7 +42,8 @@ class model(nn.Module):
         self.LLM_model = LLM_model
         self.LLM_model.require_grad = False
         self.mask_hidden_size = LLM_model.config.hidden_size
-        self.prompt_model, self.mask_model = prompt_generate(args, traindata_dimention, traindata_len, args.prompt_seq_length, labelmap, self.mask_hidden_size)
+        self.prompt_generate = prompt_generate(args, traindata_dimention, traindata_len, args.prompt_seq_length, labelmap, self.mask_hidden_size)
+        self.prompt_model, self.mask_model = self.prompt_generate()
         self.to(self.device)
 
     def forward(self, data, tokenizer):
@@ -47,6 +51,8 @@ class model(nn.Module):
         shape = data.shape
 
         before_prompt, after_prompt, mask_pos = self.prompt_model.returnPrompt(tokenizer)
+
+        # prompt_model, mask_model = self.prompt_generate()
 
         prompt_data, mask_slice = self.prompt_model()
         prompt_data = prompt_reflect(prompt_data, tokenizer, self.device)
