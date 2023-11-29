@@ -30,7 +30,7 @@ from Database.utils import split_train_valid_test
 import os,sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from configs.config import *
-
+from typing import List, Tuple 
 
 # TODO: random_state 不太应该放在这里当成参数
 def data_to_dict(data: np.ndarray, label: np.ndarray, randomstate: int) -> dict:
@@ -104,13 +104,49 @@ def get_tokenizer(model_name_or_path: str):
     
     return tokenizer
 
-def tokenize_function(sample: dict,tokenizer: AutoTokenizer):
+def tokenize_function(sample: dict):
     # max_length=None => use the model max length (it's actually the default)
     # 获取字典的键, 存到一个list中
-    keys = list(sample.keys())
+    keys = list(sample.keys())[2:]
+    # print(keys)
     array=[]
-    for key in keys:
-        array.append(sample[key])
+    final_output={}
+    final_output['label']=sample['label']
+    input_ids_list=[]
+    attention_mask_list=[] # 长度为样本数
     tokenizer=get_tokenizer(model_name_or_path)
-    outputs = tokenizer(*array, truncation=True, max_length=None)
-    return outputs
+    for i in range(len(sample['label'])):
+        feature_list=[] # 样本i的所有特征对应的值, 长度为特征数
+        for key in keys:
+            feature_list.append(sample[key][i]) # 第 i 个样本的特征 key 对应的值, sample[key] 表示特征 key 对应的每一个样本的值, 长度为样本的数量
+        output=tokenizer(feature_list, truncation=True, max_length=None)
+        input_ids_list.append(output['input_ids'])
+        attention_mask_list.append(output['attention_mask'])
+    label_tensor=torch.Tensor(final_output['label']).view(len(sample['label']), -1)
+    final_output['label']=label_tensor[:, :490].long()
+    input_ids_tensor=torch.Tensor(input_ids_list).view(len(sample['label']), -1)
+    final_output['input_ids']=input_ids_tensor[:, :490].long()
+    attention_mask_tensor=torch.Tensor(attention_mask_list).view(len(sample['label']), -1)
+    final_output['attention_mask']=attention_mask_tensor[:, :490].long()
+    # print(final_output['input_ids'][0][0],type(final_output['input_ids'][0][0]))
+    # print(final_output['attention_mask'])
+    print(final_output['input_ids'].shape)
+    # print(np.shape(np.array(final_output['attention_mask'])))
+    # print(np.shape(np.array(final_output['input_ids'])))
+    # input_text : List[List[str]]  = array
+    # print(input_text)
+    # print(type(input_text))
+    # input_text = " ".join(str(value) for value in sample.values())
+    # print(type(input_text))
+    # print(input_text[0:10])
+    # print(len(input_text))
+    # tokenizer=get_tokenizer(model_name_or_path)
+    # # outputs = tokenizer(sample['feature_0'],sample['feature_1'],sample['feature_2'],sample['feature_3'],sample['feature_4'],sample['feature_5'],sample['feature_6'],sample['feature_7'],sample['feature_8'],sample['feature_9'],sample['feature_10'],sample['feature_11'],sample['feature_12'],sample['feature_13'],sample['feature_14'],sample['feature_15'],sample['feature_16'],sample['feature_17'],sample['feature_18'],sample['feature_19'],sample['feature_20'],sample['feature_21'],sample['feature_22'],sample['feature_23'],sample['feature_24'],sample['feature_25'],sample['feature_26'],sample['feature_27'],sample['feature_28'],sample['feature_29'],sample['feature_30'],sample['feature_31'],sample['feature_32'],sample['feature_33'],sample['feature_34'],sample['feature_35'],sample['feature_36'],sample['feature_37'],sample['feature_38'],sample['feature_39'],sample['feature_40'],sample['feature_41'],sample['feature_42'],sample['feature_43'],sample['feature_44'],sample['feature_45'],sample['feature_46'],sample['feature_47'],sample['feature_48'],sample['feature_49'],sample['feature_50'],sample['feature_51'],sample['feature_52'],sample['feature_53'],sample['feature_54'],sample['feature_55'],sample['feature_56'],sample['feature_57'],sample['feature_58'],sample['feature_59'],sample['feature_60'],sample['feature_61'],sample['feature_62'],sample['feature_63'],sample['feature_64'],sample['feature_65'],sample['feature_66'],sample['feature_67'],sample['feature_68'],sample['feature_69'],sample['feature_70'],sample['feature_71'],sample['feature_72'],sample['feature_73'],sample['feature_74'],sample['feature_75'],sample['feature_76'],sample['feature_77'],sample['feature_78'],sample['feature_79'],sample['feature_80'],sample['feature_81'],sample['feature_82'],sample['feature_83'],sample['feature_84'],sample['feature_85'],sample['feature_86'],sample['feature_87'],sample['feature_88'],sample['feature_89'],sample['feature_90'],sample['feature_91'],sample['feature_92'],sample['feature_93'],sample['feature_94'],sample['feature_95'],sample['feature_96'],sample['feature_97'],sample['feature_98'],sample['feature_99'],sample['feature_100'],sample['feature_101'],sample['feature_102'],sample['feature_103'],sample['feature_104'],sample['feature_105'],sample['feature_106'],sample['feature_107'],sample['feature_108'],sample['feature_109'],sample['feature_110'],sample['feature_111'],sample['feature_112'],sample['feature_113'],sample['feature_114'],sample['feature_115'],sample['feature_116'],sample['feature_117'],sample['feature_118'],sample['feature_119'],sample['feature_120'],sample['feature_121'],sample['feature_122'],sample['feature_123'],sample['feature_124'],sample['feature_125'],sample['feature_126'],sample['feature_127'],sample['feature_128'],sample['feature_129'],sample['feature_130'],sample['feature_131'],sample['feature_132'],sample['feature_133'],sample['feature_134'],sample['feature_135'],sample['feature_136'],sample['feature_137'],sample['feature_138'],sample['feature_139'],sample['feature_140'],sample['feature_141'],sample['feature_142'],sample['feature_143'],sample['feature_144'],sample['feature_145'],sample['feature_146'],sample['feature_147'],sample['feature_148'],sample['feature_149'],sample['feature_150'],sample['feature_151'],sample['feature_152'],sample['feature_153'],sample['feature_154'],sample['feature_155'],sample['feature_156'],sample['feature_157'],sample['feature_158'],sample['feature_159'],sample['feature_160'],sample['feature_161'],sample['feature_162'],sample['feature_163'],sample['feature_164'],sample['feature_165'],sample['feature_166'],sample['feature_167'],sample['feature_168'],sample['feature_169'],sample['feature_170'],sample['feature_171'],sample['feature_172'],sample['feature_173'],sample['feature_174'],sample['feature_175'],sample['feature_176'],sample['feature_177'],sample['feature_178'],sample['feature_179'],sample['feature_180'],sample['feature_181'],sample['feature_182'],sample['feature_183'],sample['feature_184'],sample['feature_185'], truncation=True, max_length=None)
+    # outputs = tokenizer(sample['feature_0'],sample['feature_1'],sample['feature_2'], truncation=True, max_length=None)
+    return final_output
+
+def featuers_without_label(dataset: datasets.DatasetDict):
+    # print(dataset['train'].features.keys())
+    keys = list(dataset['train'].features.keys())
+    keys.pop(1)
+    return keys

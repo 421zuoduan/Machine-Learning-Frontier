@@ -37,7 +37,7 @@ batch_size = 32
 dataset = load_dataset(
     "glue", task, cache_dir="./hf_cache", download_config=config)
 # print(dataset["train"][0])
-
+# print(dataset)
 metric = evaluate.load("glue", task) # 加载 GLUE 任务的评估脚本
 
 
