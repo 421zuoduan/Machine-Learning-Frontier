@@ -4,22 +4,22 @@ from typing import List, Tuple
 from Database.database import database
 
 
-
 LEVEL_TOKEN_FORMAT = '{:0>2}'
 
 
-num_epochs = 20
+num_epochs = 500  # 训练轮数
 lr = 1e-3
-batch_size = 32
+batch_size = 8
 # model_name_or_path = "roberta-large"
-model_name_or_path = "./robert"
+model_name = "roberta-large"  # 大模型名称
+model_name_or_path = "./robert"  # 大模型路径
+tuning_method = "peft-p-tuning"  # 微调方法
 
 ADNI = database('ADNI', 'ADNI')
 PPMI = database('PPMI', 'PPMI')
-ADNI_fMRI = database('ADNI_fMRI', 'ADNI_90_120_fMRI')
-OCD_fMRI = database('OCD_fMRI', 'OCD_90_200_fMRI')
-FTD_fMRI = database('FTD_fMRI', 'FTD_90_200_fMRI')
-
+ADNI_fMRI = database('ADNI_fMRI', 'ADNI_fMRI')
+OCD_fMRI = database('OCD_fMRI', 'OCD_fMRI')
+FTD_fMRI = database('FTD_fMRI', 'FTD_fMRI')
 
 
 @dataclass

@@ -2,6 +2,7 @@ from Database.utils import *
 from typing import Tuple
 import numpy as np
 
+
 class database():
     def __init__(self, datasetname: str, filename: str):
         """
@@ -65,7 +66,8 @@ class database():
             assert datamax.shape[0] == data.shape[1]
 
             num = data.shape[1]
-            if not self.slices:
+
+            if self.slices == []:
                 self.__generateslice(datamax, datamin, num, slicenum)
             for i in range(data.shape[1]):
                 data[:, i] = np.digitize(data[:, i], self.slices[i, :])
@@ -73,8 +75,10 @@ class database():
             return data, label, labelmap
         elif len(data.shape) == 3:
             data = data.transpose((0, 2, 1))
-            datamin = np.array([np.min(data[:, :, i]) for i in range(data.shape[2])])
-            datamax = np.array([np.max(data[:, :, i]) for i in range(data.shape[2])])
+            datamin = np.array([np.min(data[:, :, i])
+                               for i in range(data.shape[2])])
+            datamax = np.array([np.max(data[:, :, i])
+                               for i in range(data.shape[2])])
             datamax = datamax + eps
             assert datamin.shape[0] == data.shape[2]
             assert datamax.shape[0] == data.shape[2]
@@ -87,7 +91,8 @@ class database():
             data: np.ndarray = data.astype(int)
             return data, label, labelmap
         else:
-            raise NotImplementedError('len(data.shape)!=2&&len(data.shape)!=3 Not Implement!')
+            raise NotImplementedError(
+                'len(data.shape)!=2&&len(data.shape)!=3 Not Implement!')
 
     def __generateslice(self, datamax: np.ndarray, datamin: np.ndarray, num: int, slicenum: int):
         """
