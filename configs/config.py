@@ -7,12 +7,12 @@ from Database.database import database
 LEVEL_TOKEN_FORMAT = '{:0>2}'
 
 
-num_epochs = 50  # 训练轮数
+num_epochs = 200  # 训练轮数
 lr = 1e-3
 batch_size = 3
 model_name = "chinese-macbert-large"  # 大模型名称
 model_name_or_path = "./chinese-macbert-large"  # 大模型路径
-tuning_method = "peft-p-tuning"  # 微调方法
+tuning_method = "prompt-tuning"  # 微调方法
 
 ADNI = database('ADNI', 'ADNI')
 PPMI = database('PPMI', 'PPMI')

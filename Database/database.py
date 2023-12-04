@@ -2,6 +2,7 @@ from Database.utils import *
 from typing import Tuple
 import numpy as np
 
+
 class database():
     def __init__(self, datasetname: str, filename: str):
         """
@@ -73,8 +74,10 @@ class database():
             return data, label, labelmap
         elif len(data.shape) == 3:
             data = data.transpose((0, 2, 1))
-            datamin = np.array([np.min(data[:, :, i]) for i in range(data.shape[2])])
-            datamax = np.array([np.max(data[:, :, i]) for i in range(data.shape[2])])
+            datamin = np.array([np.min(data[:, :, i])
+                               for i in range(data.shape[2])])
+            datamax = np.array([np.max(data[:, :, i])
+                               for i in range(data.shape[2])])
             datamax = datamax + eps
             assert datamin.shape[0] == data.shape[2]
             assert datamax.shape[0] == data.shape[2]
@@ -87,7 +90,8 @@ class database():
             data: np.ndarray = data.astype(int)
             return data, label, labelmap
         else:
-            raise NotImplementedError('len(data.shape)!=2&&len(data.shape)!=3 Not Implement!')
+            raise NotImplementedError(
+                'len(data.shape)!=2&&len(data.shape)!=3 Not Implement!')
 
     def __generateslice(self, datamax: np.ndarray, datamin: np.ndarray, num: int, slicenum: int):
         """
@@ -109,3 +113,13 @@ class database():
         rawdata = np_to_dict(data, label, labelmap)
         self.rawdata = rawdata
         self.rawdata = self.__normalize()
+
+    def mean_it(self):
+        newdict = {}
+        for key in self.rawdata.keys():
+            newdata = []
+            for sample in self.rawdata[key]:
+                newsample = np.mean(sample, axis=0)
+                newdata.append(newsample)
+            newdict[key] = newdata
+        self.rawdata = newdict
