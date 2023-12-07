@@ -1,21 +1,7 @@
-import numpy as np
 import torch
-import evaluate
-import peft
-import transformers
-import datasets
 import matplotlib.pyplot as plt
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from peft import PeftModel, PeftConfig
 from datasets import load_dataset
-from peft import (
-    get_peft_config,
-    get_peft_model,
-    get_peft_model_state_dict,
-    set_peft_model_state_dict,
-    PeftType,
-    PromptEncoderConfig,
-)
 from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
@@ -23,10 +9,8 @@ from transformers import (
     TrainingArguments,
     Trainer,
 )
-
 from configs.config import *
 from utils import *
-from typing import List, Tuple
 
 
 class Tokenized():
@@ -69,7 +53,6 @@ class Tokenized():
         attention_mask_tensor = torch.Tensor(
             attention_mask_list).view(len(sample['label']), -1)
         final_output['attention_mask'] = attention_mask_tensor[:, :490].long()
-        # print(final_output['input_ids'].shape)
         return final_output
 
     def get_tokenized_dataset(self):
