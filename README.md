@@ -30,6 +30,7 @@
 - `others/` 放了一些其他尝试的但不规范的代码
 - `Project1/` 部分是项目 1 的有用的尝试的代码
 - `Tokenized.py` 用于将文本数据映射到词表
+- `dtwknn.py` 中是经DTW算法改进后的knn模型, 其中DTW算法记录在`utils.py`中.
 
 由于本项目采用了若干大模型 (包括 RoBERTa, BERT, ELECTRA, MacBERT), 这些大模型较大, 未包括在在上述文件结构中.
 
