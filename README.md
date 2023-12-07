@@ -32,3 +32,5 @@
 - `Tokenized.py` 用于将文本数据映射到词表
 
 由于本项目采用了若干大模型 (包括 RoBERTa, BERT, ELECTRA, MacBERT), 这些大模型较大, 未包括在在上述文件结构中.
+
+![](https://raw.githubusercontent.com/baoduoxu/BlogImage/main/image/202312080208829.png)
