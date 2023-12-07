@@ -38,28 +38,28 @@ if __name__ == '__main__':
     for random_state in db_cfg.random_state:
         setup_seed(random_state)
         TokenizeObject = Tokenized(
-            model_name_or_path, db, db_cfg, random_state)
+            db_cfg.model_name_or_path, db, db_cfg, random_state)
         tokenized_datasets = TokenizeObject.get_tokenized_dataset()
-
         data_collator = DataCollatorWithPadding(
             tokenizer=TokenizeObject.tokenizer, padding="longest")
+        
 # ---------------------------------model definition---------------------------------
         peft_config = PromptEncoderConfig(
             task_type="SEQ_CLS", num_virtual_tokens=20, encoder_hidden_size=128)
 
         model = AutoModelForSequenceClassification.from_pretrained(
-            model_name_or_path, return_dict=True, num_labels=5)
+            db_cfg.model_name_or_path, return_dict=True, num_labels=5)
         model = get_peft_model(model, peft_config)
         model.print_trainable_parameters()
-        # "trainable params: 1351938 || all params: 355662082 || trainable%: 0.38011867680626127"
 
 # --------------------------------train--------------------------------------------
         training_args = TrainingArguments(
-            output_dir=model_name + "-" + tuning_method + "-" + db_cfg.name,  # 训练结果输出路径
+            output_dir=db_cfg.model_name + "-" +
+            db_cfg.tuning_method + "-" + db_cfg.name,  # 训练结果输出路径
             learning_rate=1e-3,
-            per_device_train_batch_size=batch_size,
-            per_device_eval_batch_size=batch_size,
-            num_train_epochs=num_epochs,
+            per_device_train_batch_size=db_cfg.batch_size,
+            per_device_eval_batch_size=db_cfg.batch_size,
+            num_train_epochs=db_cfg.num_epochs,
             weight_decay=0.01,
             evaluation_strategy="epoch",
             save_strategy="epoch",
@@ -82,6 +82,6 @@ if __name__ == '__main__':
         trainer.train()  # 训练
 
         # 绘制损失值和准确率曲线
-        plot_acc(db_cfg, model_name, num_epochs, accuracies)
+        plot_acc(db_cfg, db_cfg.model_name, db_cfg.num_epochs, accuracies)
 
         print(trainer.evaluate(tokenized_datasets["test"]))  # 测试
