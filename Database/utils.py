@@ -4,6 +4,9 @@ from sklearn.model_selection import train_test_split
 
 
 def load_mat(filepath: str):
+    '''
+    加载 .mat 文件.
+    '''
     data = IO.loadmat(filepath)
     data_dict = {}
     for key, value in data.items():
@@ -15,6 +18,9 @@ def load_mat(filepath: str):
 
 def split_train_valid_test(data: np.ndarray, label: np.ndarray, randomstate: int) -> (
         np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray):
+    '''
+    划分训练集, 验证集和测试集.
+    '''
     train_data, temp_data, train_label, temp_label = train_test_split(data, label, test_size=0.4,
                                                                       random_state=randomstate, stratify=label)
 
@@ -25,6 +31,9 @@ def split_train_valid_test(data: np.ndarray, label: np.ndarray, randomstate: int
 
 
 def np_to_dict(data, label, labelmap):
+    '''
+    将 numpy 文件转为字典格式.
+    '''
     rawdata = {}
     unique_labels = np.unique(label)
     for u_label in unique_labels:
@@ -37,6 +46,9 @@ def np_to_dict(data, label, labelmap):
     return rawdata
 
 def dict_tonp(datadict):
+    '''
+    将字典格式数据转为numpy格式.
+    '''
     data = []
     label = []
     labelmap = []
@@ -48,6 +60,3 @@ def dict_tonp(datadict):
             data.append(item)
         pointer += 1
     return np.array(data), np.array(label), np.array(labelmap)
-
-
-

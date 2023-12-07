@@ -114,3 +114,17 @@ class database():
         rawdata = np_to_dict(data, label, labelmap)
         self.rawdata = rawdata
         self.rawdata = self.__normalize()
+        
+    def mean_it(self):
+        newdict = {}
+        for key in self.rawdata.keys():
+            newdata1 = []
+            newdata2 = []
+            for sample in self.rawdata[key]:
+                newmean = np.mean(sample, axis=0)
+                newvar = np.var(sample, axis=0)
+                newdata1.append(newmean)
+                newdata2.append(newvar)
+            newdict[key] = np.concatenate((newdata1, newdata2), axis=1)
+            print(newdict[key].shape)
+        self.rawdata = newdict

@@ -3,7 +3,6 @@
 项目结构如下:
 
 ```
-├── checkpoints/
 ├── configs/
 │   └── config.py
 ├── Database/
@@ -14,12 +13,14 @@
 ├── models/
 │   ├── GCN.py
 │   └── GraphGRU.py
-├── others/
 ├── Project1/
 ├── .gitignore
 ├── main.py
 ├── README.md
 ├── Tokenized.py
+├── dtwknn.py
+├── normaltest.py
+├── ViT.ipynb
 └── utils.py
 ```
 

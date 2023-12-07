@@ -17,15 +17,12 @@ class promptConfig():
     name: str
     num_epochs = 500  # 训练轮数
     lr: float = 1e-3
-    weight_decay: float = 5e-4
-    batch_size = 8
+    batch_size = 8 # 批大小
     model_name = "roberta-large"  # 大模型名称
     model_name_or_path = "./robert"  # 大模型路径
     tuning_method = "peft-p-tuning"  # 微调方法
-    dropout: float = 0.05
     device: torch.device = torch.device(
         'cuda') if torch.cuda.is_available() else torch.device('cpu')
-    batch_size: int = 4
     slice_num: int = 100
     random_state: Tuple[int] = (0, 1, 2, 3, 4)
 

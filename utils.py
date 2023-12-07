@@ -1,46 +1,28 @@
-from datasets import load_metric
 from typing import List, Tuple
 from configs.config import *
 import numpy as np
 import torch
-import evaluate
-import peft
-import transformers
 import datasets
 import matplotlib.pyplot as plt
 import random
 
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
-from transformers import AutoModelForSequenceClassification, AutoTokenizer
-from peft import PeftModel, PeftConfig
-from datasets import load_dataset
-from peft import (
-    get_peft_config,
-    get_peft_model,
-    get_peft_model_state_dict,
-    set_peft_model_state_dict,
-    PeftType,
-    PromptEncoderConfig,
-)
-from transformers import (
-    AutoModelForSequenceClassification,
-    AutoTokenizer,
-    DataCollatorWithPadding,
-    TrainingArguments,
-    Trainer,
-)
 
-from Database.utils import split_train_valid_test
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from Database.utils import split_train_valid_test
 
 def setup_seed(seed) -> None:
+    '''
+    用各种方式设置随机数种子.
+    '''
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
     np.random.seed(seed)
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
+
 
 def data_to_dict(data: np.ndarray, label: np.ndarray, randomstate: int) -> dict:
     """
@@ -105,12 +87,10 @@ def data_to_dict(data: np.ndarray, label: np.ndarray, randomstate: int) -> dict:
     return datasets.DatasetDict(data_dict)
 
 
-
-
-
-
-
 def featuers_without_label(dataset: datasets.DatasetDict):
+    '''
+    返回一个列表, 列表中的元素为数据集中除了 label 以外的所有特征的名称.
+    '''
     keys = list(dataset['train'].features.keys())
     keys.pop(1)
     return keys
@@ -120,6 +100,9 @@ accuracies = []
 
 
 def compute_metrics(pred):
+    '''
+    计算模型的评估指标, 用于 Trainer 中的 compute_metrics 参数.
+    '''
     global accuracies
     labels = pred.label_ids.tolist()  # 将ndarray转换为Python列表
     preds = pred.predictions.argmax(-1).tolist()  # 将ndarray转换为Python列表
@@ -136,9 +119,30 @@ def compute_metrics(pred):
 
 
 def plot_acc(db_cfg: database, model_name: str, num_epochs: int, accuracies: list):
+    '''
+    绘制准确率折线图.
+    '''
     plt.figure(figsize=(10, 5))
     plt.plot(range(1, num_epochs+1), accuracies, "r.-")
     plt.xlabel("Epoch")
     plt.ylabel("Accuracy")
     plt.title(db_cfg.name + " with " + model_name + " Validation Accuracy")
     plt.show()
+
+def calculate_multi_dtw(sample1, sample2):
+    '''
+    基于多变量DTW算法计算两个多变量时间序列样本之间的距离。
+    '''
+    global cnt
+    num_varibles = 90
+    num_moments = int(sample1.shape[0]/num_varibles)
+    multi_dtw = 0
+    # 计算DTW距离之和
+    for i in range(num_varibles):
+        distance, _ = fastdtw(sample1[num_moments*i:num_moments*(i+1)],
+                              sample2[num_moments*i:num_moments*(i+1)], dist=2)
+        multi_dtw = multi_dtw + distance
+    multi_dtw = multi_dtw / len(sample1)
+    cnt += 1
+    print(cnt, multi_dtw)
+    return multi_dtw

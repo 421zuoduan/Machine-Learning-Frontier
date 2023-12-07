@@ -33,7 +33,8 @@ from Tokenized import Tokenized
 
 if __name__ == '__main__':
 
-    db_cfg = ADNI_config  # 在主函数里换数据集只改这一个参数
+# ---------------------------------data preparation---------------------------------
+    db_cfg = ADNI_config  # 用到的数据集 =['ADNI_config', 'PPMI_config', 'ADNI_fMRI_config', 'OCD_fMRI_config', 'FTD_fMRI_config']
     db = database(db_cfg.name, db_cfg.name)
     for random_state in db_cfg.random_state:
         setup_seed(random_state)
@@ -42,7 +43,7 @@ if __name__ == '__main__':
         tokenized_datasets = TokenizeObject.get_tokenized_dataset()
         data_collator = DataCollatorWithPadding(
             tokenizer=TokenizeObject.tokenizer, padding="longest")
-        
+
 # ---------------------------------model definition---------------------------------
         peft_config = PromptEncoderConfig(
             task_type="SEQ_CLS", num_virtual_tokens=20, encoder_hidden_size=128)
